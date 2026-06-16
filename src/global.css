@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* 日间模式 - 专注白板主题 */
+  :root {
+    --background: 210 17% 98%;
+    --foreground: 215 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 12%;
+    --primary: 208 52% 36%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 17% 95%;
+    --secondary-foreground: 215 25% 12%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 215 14% 45%;
+    --accent: 28 80% 52%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 17% 88%;
+    --input: 210 17% 88%;
+    --ring: 208 52% 36%;
+    --radius: 0.5rem;
+  }
+
+  /* 夜间模式 */
+  .dark {
+    --background: 0 0% 11.8%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 16.5%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 16.5%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 208 52% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 28 80% 58%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
+    --ring: 208 52% 55%;
+  }
+}
