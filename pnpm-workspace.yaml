@@ -1,5 +1,7 @@
 packages:
   - packages/*
+allowBuilds:
+  esbuild: set this to true or false
 catalog:
   "@expo/metro-runtime": 55.0.11
   "@sentry/react-native": 8.9.2
