@@ -64,6 +64,7 @@ export default function WordbookImportScreen() {
   const [progress, setProgress] = useState(0);
   const [showNameModal, setShowNameModal] = useState(false);
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  const [selectedPackData, setSelectedPackData] = useState<{ w: string[]; m: string[]; p: string[] } | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // ── AI 生成词汇包状态 ──
@@ -142,6 +143,15 @@ export default function WordbookImportScreen() {
           });
           setProgress(Math.round(((i + batch.length) / wordList.length) * 100));
         }
+      } else if (selectedPackData && selectedPackData.m.length > 0) {
+        const lookup = new Map<string, { meaning: string; phonetic: string }>();
+        selectedPackData.w.forEach((w, i) => {
+          lookup.set(w.toLowerCase(), { meaning: selectedPackData.m[i] || '', phonetic: selectedPackData.p[i] || '' });
+        });
+        enriched = enriched.map(w => {
+          const found = lookup.get(w.word.toLowerCase());
+          return found ? { ...w, meaning: found.meaning || w.meaning, phonetic: found.phonetic || w.phonetic } : w;
+        });
       }
       const wbId = await createWordbook(name.trim(), detectedLang);
       for (const w of enriched) {
@@ -296,6 +306,7 @@ luggage|行李`;
                                 key={packId}
                                 onPress={() => {
                                   setSelectedPackId(isSelected ? null : packId);
+                                  setSelectedPackData(isSelected ? null : { w: pack.w, m: pack.m || [], p: pack.p || [] });
                                   setPasteText(isSelected ? '' : pack.w.join('\n'));
                                   setWordbookName(isSelected ? '' : pack.n);
                                 }}
@@ -366,7 +377,7 @@ luggage|行李`;
           {step === 'preview' && (
             <>
               <Text className={`text-lg font-bold mb-1 ${textColor}`}>确认单词列表</Text>
-              <Text className={`text-sm mb-2 ${subText}`}>共识别到 {parsedWords.length} 个单词{activeAiConfig ? '，将使用 AI 自动生成释义' : '（未配置 AI，仅保存单词）'}</Text>
+              <Text className={`text-sm mb-2 ${subText}`}>共识别到 {parsedWords.length} 个单词{selectedPackData ? '，将使用内置释义' : activeAiConfig ? '，将使用 AI 自动生成释义' : '（未配置 AI，仅保存单词）'}</Text>
               <View className={`flex-row items-center gap-1.5 mb-4 px-3 py-2 rounded-xl ${isDark ? 'bg-[#2A2A2A]' : 'bg-blue-50'}`}>
                 <Ionicons name="language-outline" size={14} color="#2C5F8A" />
                 <Text className="text-xs" style={{ color: '#2C5F8A' }}>
@@ -396,7 +407,7 @@ luggage|行李`;
           {step === 'generating' && (
             <View className="items-center py-10">
               <ActivityIndicator size="large" color="#2C5F8A" />
-              <Text className={`text-base font-semibold mt-4 ${textColor}`}>AI 正在生成释义...</Text>
+               <Text className={`text-base font-semibold mt-4 ${textColor}`}>{selectedPackData ? '正在导入内置释义...' : 'AI 正在生成释义...'}</Text>
               <Text className={`text-sm mt-2 ${subText}`}>{progress}%</Text>
               <View className={`h-2 w-48 rounded-full mt-4 ${isDark ? 'bg-[#444]' : 'bg-gray-200'}`}>
                 <View className="h-2 rounded-full bg-[#2C5F8A]" style={{ width: `${progress}%` }} />
