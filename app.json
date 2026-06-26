@@ -2,7 +2,7 @@
   "expo": {
     "name": "AI私塾",
     "slug": "ai-private-tutor",
-    "version": "0.1.63",
+    "version": "0.1.64",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "buildNumber": "1",
-      "bundleIdentifier": "com.miaoda.appbmp8n1fqz9c1"
+      "bundleIdentifier": "com.wuyu.aisishu"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,8 +22,8 @@
         "backgroundColor": "#2C5F8A"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 5,
-      "package": "com.miaoda.appbmp8n1fqz9c1",
+      "versionCode": 6,
+      "package": "com.wuyu.aisishu",
       "usesCleartextTraffic": true,
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
