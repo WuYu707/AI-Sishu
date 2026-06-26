@@ -56,7 +56,9 @@ export default function ReviewScreen() {
   async function handleMastery(mastered: boolean) {
     const current = reviewWords[currentIdx];
     if (!current) return;
-    await markWordMastered(current.id, mastered);
+    try {
+      await markWordMastered(current.id, mastered);
+    } catch {}
     if (currentIdx < reviewWords.length - 1) {
       setCurrentIdx(i => i + 1);
       setFlipped(false); } else {

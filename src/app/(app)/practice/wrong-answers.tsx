@@ -172,8 +172,7 @@ export default function WrongAnswersScreen() {
     setPracticeSubmitted(true);
     const newScore = { correct: practiceScore.correct + (correct ? 1 : 0), total: practiceScore.total + 1 };
     setPracticeScore(newScore);
-    // 记录答题历史 + 今日统计
-    await saveAnswerRecord(0, q.id, answer, correct).catch(() => {});
+    await saveAnswerRecord(Number(paperId || 0) || 1, q.id, answer, correct).catch(() => {});
     await updateTodayStat({ question_count: 1 }).catch(() => {});
   }
 

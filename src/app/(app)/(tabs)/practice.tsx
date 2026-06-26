@@ -42,15 +42,19 @@ export default function PracticeTab() {
   }
 
   async function handleDelete(id: number) {
-    await deleteExamPaper(id);
-    await clearPracticeProgress(id);
-    setShowDeleteId(null);
-    loadPapers();
+    try {
+      await deleteExamPaper(id);
+      await clearPracticeProgress(id);
+      setShowDeleteId(null);
+      loadPapers();
+    } catch {}
   }
 
   async function handleReset(id: number) {
-    await clearPracticeProgress(id);
-    loadPapers();
+    try {
+      await clearPracticeProgress(id);
+      loadPapers();
+    } catch {}
   }
 
   return (

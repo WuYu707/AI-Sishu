@@ -473,7 +473,7 @@ export interface AnswerRecord {
 export async function saveAnswerRecord(paperId: number, questionId: number, userAnswer: string, isCorrect: boolean): Promise<void> {
   const db = await getDb();
   await db.runAsync(
-    'INSERT OR REPLACE INTO answer_records (paper_id, question_id, user_answer, is_correct) VALUES (?, ?, ?, ?)',
+    'INSERT INTO answer_records (paper_id, question_id, user_answer, is_correct) VALUES (?, ?, ?, ?)',
     [paperId, questionId, userAnswer, isCorrect ? 1 : 0]
   );
 }

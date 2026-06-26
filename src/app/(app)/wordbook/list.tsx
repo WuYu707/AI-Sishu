@@ -88,23 +88,29 @@ export default function WordbookListScreen() {
 
   async function handleCreate() {
     if (!newName.trim()) return;
-    await createWordbook(newName.trim(), 'auto');
-    setNewName('');
-    setShowCreate(false);
-    loadWordbooks();
+    try {
+      await createWordbook(newName.trim(), 'auto');
+      setNewName('');
+      setShowCreate(false);
+      loadWordbooks();
+    } catch {}
   }
 
   async function handleEdit() {
     if (!editItem || !editName.trim()) return;
-    await updateWordbook(editItem.id, editName.trim());
-    setEditItem(null);
-    loadWordbooks();
+    try {
+      await updateWordbook(editItem.id, editName.trim());
+      setEditItem(null);
+      loadWordbooks();
+    } catch {}
   }
 
   async function handleDelete(id: number) {
-    await deleteWordbook(id);
-    setExpandedId(null);
-    loadWordbooks();
+    try {
+      await deleteWordbook(id);
+      setExpandedId(null);
+      loadWordbooks();
+    } catch {}
   }
 
   async function handleExportCsv(id: number, name: string) {

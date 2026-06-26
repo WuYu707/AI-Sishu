@@ -476,8 +476,7 @@ export default function OralScreen() {
                 : '按住麦克风，说话后松开发送'}
             </Text>
             <Pressable
-              onPress={() => { if (!isRecording && !recognizing && !chatLoading) startRecording(); }}
-              onLongPress={startRecording}
+              onLongPress={() => { if (!isRecording && !recognizing && !chatLoading) startRecording(); }}
               onPressOut={isRecording ? stopRecordingChat : undefined}
               disabled={recognizing || chatLoading}
               style={{

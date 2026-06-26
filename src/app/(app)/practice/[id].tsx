@@ -75,7 +75,7 @@ export default function PracticeScreen() {
       timerRef.current = setInterval(() => setTimeLeft(t => t - 1), 1000);
     } else if (timeLeft === 0 && timerActive) {
       setTimerActive(false);
-      if (!submitted) handleSubmit();
+      if (!submitted) handleSubmit().catch(() => {});
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [timerActive, timeLeft]);
