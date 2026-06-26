@@ -2,7 +2,7 @@
   "expo": {
     "name": "AI私塾",
     "slug": "ai-private-tutor",
-    "version": "0.1.60",
+    "version": "0.1.61",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
