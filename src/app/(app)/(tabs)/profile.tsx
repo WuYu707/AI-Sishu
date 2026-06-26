@@ -107,7 +107,7 @@ export default function ProfileTab() {
 
   return (
     <SafeAreaView className={`flex-1 ${bg}`}>
-    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic">
+    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingBottom: 80 }}>
       <View className="px-5 pt-4 pb-4">
         <Text className={`text-2xl font-bold ${textColor}`}>我的</Text>
         <Text className={`text-sm mt-1 ${subText}`}>学习记录 · 个人设置</Text>

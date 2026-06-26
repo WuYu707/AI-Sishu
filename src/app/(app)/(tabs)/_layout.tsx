@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/lib/AppContext';
 import { BlurView } from 'expo-blur';
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, View } from 'react-native';
 
 export default function TabsLayout() {
   const { isDark } = useAppContext();
@@ -17,23 +17,28 @@ export default function TabsLayout() {
         tabBarActiveTintColor: activeTint,
         tabBarInactiveTintColor: inactiveTint,
         tabBarStyle: {
-          backgroundColor: 'transparent',
-          borderTopColor: 'transparent',
+          position: 'absolute',
+          borderTopWidth: 0,
+          elevation: 0,
           height: 68,
           paddingBottom: 8,
           paddingTop: 4,
-          position: 'absolute',
         },
-        tabBarBackground: () => (
-          Platform.OS === 'android' ? (
-            <BlurView
-              intensity={isDark ? 60 : 50}
-              tint={isDark ? 'dark' : 'light'}
-              experimentalBlurMethod="dimezisBlurView"
-              style={StyleSheet.absoluteFill}
-            />
-          ) : null
-        ),
+        tabBarBackground: () => {
+          if (Platform.OS === 'android') {
+            return (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.85)' }]}>
+                <BlurView
+                  intensity={isDark ? 80 : 70}
+                  tint={isDark ? 'dark' : 'light'}
+                  experimentalBlurMethod="dimezisBlurView"
+                  style={StyleSheet.absoluteFill}
+                />
+              </View>
+            );
+          }
+          return <View style={StyleSheet.absoluteFill} />;
+        },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
       }}
     >

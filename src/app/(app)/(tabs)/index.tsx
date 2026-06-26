@@ -226,7 +226,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className={`flex-1 ${bg}`}>
-    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false}>
+    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
       {/* 顶部标题 */}
       <View className="px-5 pt-4 pb-4">
         <Text className={`text-2xl font-bold ${textColor}`}>AI私塾</Text>

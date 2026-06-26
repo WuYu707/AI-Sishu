@@ -96,7 +96,7 @@ export default function PracticeTab() {
           data={papers}
           keyExtractor={item => item.id.toString()}
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
           ItemSeparatorComponent={() => <View className="h-3" />}
           renderItem={({ item }) => {
             const progress = item.total_count > 0 ? item.progress / item.total_count : 0;

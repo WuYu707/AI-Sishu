@@ -50,7 +50,7 @@ export default function AiTab() {
 
   return (
     <SafeAreaView className={`flex-1 ${bg}`}>
-    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic">
+    <ScrollView className={`flex-1 ${bg}`} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingBottom: 80 }}>
       <View className="px-5 pt-4 pb-4">
         <Text className={`text-2xl font-bold ${textColor}`}>AI 学习中心</Text>
         <Text className={`text-sm mt-1 ${subText}`}>借助 AI 提升你的学习效率</Text>
