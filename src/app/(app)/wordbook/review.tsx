@@ -101,13 +101,6 @@ export default function ReviewScreen() {
           >
             <Text className={`text-4xl font-bold mb-3 ${textColor}`}>{current?.word}</Text>
             {current?.phonetic && <Text className={`text-lg ${subText} mb-3`}>{current.phonetic}</Text>}
-            <Pressable
-              onPress={() => { if (current?.word) Speech.speak(current.word, { language: 'en-US', rate: 0.85 }); }}
-              className={`mb-2 px-4 py-1.5 rounded-full flex-row items-center gap-1.5 ${isDark ? 'bg-[#333]' : 'bg-blue-50'}`}
-            >
-              <Ionicons name="volume-medium-outline" size={14} color="#2C5F8A" />
-              <Text className="text-[#2C5F8A] text-xs font-medium">朗读发音</Text>
-            </Pressable>
             {flipped ? (
               <>
                 <View className={`h-px w-full ${isDark ? 'bg-[#444]' : 'bg-gray-100'} mb-4`} />
@@ -117,6 +110,13 @@ export default function ReviewScreen() {
             ) : (
               <Text className={`text-sm mt-4 ${subText}`}>点击翻转查看释义</Text>
             )}
+          </Pressable>
+          <Pressable
+            onPress={() => { if (current?.word) Speech.speak(current.word, { language: 'en-US', rate: 0.85 }); }}
+            className={`mt-3 px-4 py-2 rounded-full flex-row items-center gap-1.5 ${isDark ? 'bg-[#333]' : 'bg-blue-50'}`}
+          >
+            <Ionicons name="volume-medium-outline" size={14} color="#2C5F8A" />
+            <Text className="text-[#2C5F8A] text-xs font-medium">朗读发音</Text>
           </Pressable>
 
           <View className="flex-row gap-3 mt-6 w-full">
@@ -151,7 +151,7 @@ export default function ReviewScreen() {
         <Text className={`text-base font-bold flex-1 ${textColor}`}>艾宾浩斯复习</Text>
       </View>
       {/* 词本选择器 */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3" style={{ maxHeight: 52, flexGrow: 0 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3" style={{ flexGrow: 0 }}>
         <View className="flex-row gap-2">
           {[{ id: null, name: '全部词本' }, ...wordbooks].map(wb => (
             <Pressable

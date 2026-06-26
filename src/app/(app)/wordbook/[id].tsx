@@ -412,11 +412,6 @@ export default function WordCardScreen() {
               style={{ borderCurve: 'continuous', minHeight: 280, backfaceVisibility: 'hidden', transform: [{ rotateY: frontInterpolate }] }}>
               <Text className={`text-4xl font-bold mb-3 ${textColor}`}>{current?.word}</Text>
               {current?.phonetic ? <Text className={`text-lg ${subText} mb-2`}>{current.phonetic}</Text> : null}
-              <Pressable onPress={() => current?.word && Speech.speak(current.word, { language: 'en-US', rate: 0.85 })}
-                className={`mt-2 px-4 py-2 rounded-full flex-row items-center gap-2 ${isDark ? 'bg-[#333]' : 'bg-blue-50'}`}>
-                <Ionicons name="volume-medium-outline" size={16} color="#2C5F8A" />
-                <Text className="text-[#2C5F8A] text-xs font-medium">朗读发音</Text>
-              </Pressable>
               <Text className={`text-sm ${subText} mt-4`}>点击翻转查看释义</Text>
               {current?.mastered ? (
                 <View className="absolute top-3 right-3 bg-green-100 px-2 py-1 rounded-full flex-row items-center gap-1">
@@ -429,17 +424,17 @@ export default function WordCardScreen() {
               style={{ borderCurve: 'continuous', minHeight: 280, backfaceVisibility: 'hidden', transform: [{ rotateY: backInterpolate }] }}>
               <Text className={`text-2xl font-bold mb-1 ${textColor}`}>{current?.word}</Text>
               {current?.phonetic ? <Text className={`text-sm ${subText} mb-3`}>{current.phonetic}</Text> : null}
-              <Pressable onPress={() => current?.word && Speech.speak(current.word, { language: 'en-US', rate: 0.85 })}
-                className={`mb-3 px-3 py-1.5 rounded-full flex-row items-center gap-1.5 self-start ${isDark ? 'bg-[#333]' : 'bg-blue-50'}`}>
-                <Ionicons name="volume-medium-outline" size={14} color="#2C5F8A" />
-                <Text className="text-[#2C5F8A] text-xs font-medium">朗读</Text>
-              </Pressable>
               <Text className={`text-base text-[#2C5F8A] font-medium mb-3`}>{current?.meaning || '暂无释义'}</Text>
               {current?.example ? (<>
                 <View className={`h-px ${isDark ? 'bg-[#444]' : 'bg-gray-100'} mb-3`} />
                 <Text className={`text-sm italic ${subText} leading-5`}>{current.example}</Text>
               </>) : null}
             </Animated.View>
+          </Pressable>
+          <Pressable onPress={() => current?.word && Speech.speak(current.word, { language: 'en-US', rate: 0.85 })}
+            className={`mt-3 px-4 py-2 rounded-full flex-row items-center gap-2 ${isDark ? 'bg-[#333]' : 'bg-blue-50'}`}>
+            <Ionicons name="volume-medium-outline" size={16} color="#2C5F8A" />
+            <Text className="text-[#2C5F8A] text-xs font-medium">朗读发音</Text>
           </Pressable>
         </View>
       )}
