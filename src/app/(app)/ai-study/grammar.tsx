@@ -1,5 +1,5 @@
 /**
- * 语法纠错页 - 支持切换本地/在线模型
+ * 语法纠错页
  */
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,16 +7,15 @@ import { useState } from 'react';
 import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/lib/AppContext';
-import { correctGrammar, isLocalAiAvailable } from '@/lib/aiService';
+import { correctGrammar } from '@/lib/aiService';
 
 export default function GrammarScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const [useLocal, setUseLocal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const bg = isDark ? 'bg-[#1E1E1E]' : 'bg-[#F8F9FA]';
@@ -28,16 +27,16 @@ export default function GrammarScreen() {
 
   async function handleCheck() {
     if (!inputText.trim()) { setErrorMsg('请输入要检查的文本'); return; }
-    const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+    const hasAi = !!activeAiConfig;
     if (!hasAi) {
-      setErrorMsg('请先配置在线AI服务或启用本地大模型');
+      setErrorMsg('请先配置在线AI服务');
       return;
     }
     setErrorMsg('');
     setLoading(true);
     setResult('');
     try {
-      const res = await correctGrammar(inputText, activeAiConfig, localAiConfig);
+      const res = await correctGrammar(inputText, activeAiConfig);
       setResult(res);
     } catch (e: any) {
       setErrorMsg('纠错失败，请稍后重试：' + (e?.message || ''));
@@ -58,30 +57,11 @@ export default function GrammarScreen() {
             </Pressable>
             <Text className={`text-xl font-bold ${textColor}`}>语法纠错</Text>
           </View>
-          {/* 模型切换 */}
-          <View className="flex-row gap-2 mb-5">
-            {[
-              { label: '在线API', value: false, available: !!activeAiConfig },
-              { label: '本地模型', value: true, available: isLocalAiAvailable(localAiConfig) },
-            ].map(opt => (
-              <Pressable
-                key={opt.label}
-                onPress={() => opt.available && setUseLocal(opt.value)}
-                className={`flex-1 py-2 rounded-xl items-center border ${
-                  useLocal === opt.value ? 'bg-[#2C5F8A] border-[#2C5F8A]' :
-                  !opt.available ? (isDark ? 'bg-[#222] border-[#333]' : 'bg-gray-50 border-gray-200') :
-                  card.includes('bg-[#2A2A2A]') ? 'bg-[#2A2A2A] border-[#333]' : 'bg-white border-gray-200'
-                }`}
-              >
-                <Text className={`text-xs font-medium ${
-                  useLocal === opt.value ? 'text-white' :
-                  !opt.available ? (isDark ? 'text-gray-600' : 'text-gray-300') : subText
-                }`}>
-                  {opt.label}{!opt.available ? '（未配置）' : ''}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          {!activeAiConfig && (
+            <View className={`rounded-xl p-3 mb-5 ${isDark ? 'bg-yellow-900/30 border border-yellow-700/50' : 'bg-yellow-50 border border-yellow-200'}`}>
+              <Text className={`text-xs ${isDark ? 'text-yellow-300' : 'text-yellow-700'}`}>请先在「我」→「AI服务配置」中配置在线AI服务</Text>
+            </View>
+          )}
 
           {/* 输入区 */}
           <Text className={`text-sm font-medium mb-2 ${textColor}`}>输入文本</Text>

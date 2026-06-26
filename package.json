@@ -4,8 +4,8 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "devkit-lint",
     "prebuild": "expo prebuild --platform android --clean",
@@ -63,7 +63,6 @@
     "expo-status-bar": "~55.0.4",
     "expo-system-ui": "~55.0.9",
     "expo-web-browser": "~55.0.15",
-    "llama.rn": "0.10.0-rc.0",
     "lucide-react-native": "^1.11.0",
     "miaoda-expo-devkit": "0.1.1-beta.83",
     "nativewind": "^4.2.3",

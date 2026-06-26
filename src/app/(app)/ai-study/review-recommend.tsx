@@ -8,7 +8,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/lib/AppContext';
 import { getWordbooks, getWordsForReview, type Wordbook, type Word} from '@/lib/database';
-import { getReviewRecommendation, isLocalAiAvailable } from '@/lib/aiService';
+import { getReviewRecommendation } from '@/lib/aiService';
 
 interface RecommendedWord extends Word {
   reason?: string;
@@ -16,7 +16,7 @@ interface RecommendedWord extends Word {
 
 export default function ReviewRecommendScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [wordbooks, setWordbooks] = useState<Wordbook[]>([]);
   const [selectedWbId, setSelectedWbId] = useState<number | null>(null);
@@ -50,12 +50,12 @@ export default function ReviewRecommendScreen() {
     setAiSuggestion(''); }
 
   async function handleAiAnalyze() {
-    const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+    const hasAi = !!activeAiConfig;
     if (!hasAi || words.length === 0) return;
     setAiLoading(true);
     try {
       const wordList = words.map(w => ({ word: w.word, mastered: !!w.mastered, review_count: w.review_count || 0 }));
-      const suggestions = await getReviewRecommendation(wordList, activeAiConfig, localAiConfig);
+      const suggestions = await getReviewRecommendation(wordList, activeAiConfig);
       setAiSuggestion(suggestions.length > 0 ? `推荐优先复习：${suggestions.join('、')}` : '暂无额外推荐，继续保持！');
     } catch {
       setAiSuggestion('AI 分析失败，请稍后重试');
@@ -100,19 +100,18 @@ export default function ReviewRecommendScreen() {
         <View className="px-5 pb-3">
           <Pressable
             onPress={handleAiAnalyze}
-            disabled={!(activeAiConfig || isLocalAiAvailable(localAiConfig)) || aiLoading}
-            className={`py-3 rounded-xl items-center flex-row justify-center gap-2`}
+            disabled={!activeAiConfig || aiLoading}
             style={{
-              backgroundColor: !(activeAiConfig || isLocalAiAvailable(localAiConfig))
+              backgroundColor: !activeAiConfig
                 ? (isDark ? '#222' : '#f3f4f6')
                 : '#2C5F8A'
             }}
           >
             {aiLoading
-              ? <ActivityIndicator size="small" color={(activeAiConfig || isLocalAiAvailable(localAiConfig)) ? 'white' : '#aaa'} />
-              : <Ionicons name="sparkles-outline" size={16} color={(activeAiConfig || isLocalAiAvailable(localAiConfig)) ? 'white' : (isDark ? '#555' : '#aaa')} />}
-            <Text className={`text-sm font-semibold ${!(activeAiConfig || isLocalAiAvailable(localAiConfig)) ? (isDark ? 'text-gray-600' : 'text-gray-400') : 'text-white'}`}>
-              {aiLoading ? 'AI 分析中...' : (activeAiConfig || isLocalAiAvailable(localAiConfig)) ? 'AI 智能学习建议' : '请先配置 AI 服务'}
+              ? <ActivityIndicator size="small" color={activeAiConfig ? 'white' : '#aaa'} />
+              : <Ionicons name="sparkles-outline" size={16} color={activeAiConfig ? 'white' : (isDark ? '#555' : '#aaa')} />}
+            <Text className={`text-sm font-semibold ${!activeAiConfig ? (isDark ? 'text-gray-600' : 'text-gray-400') : 'text-white'}`}>
+              {aiLoading ? 'AI 分析中...' : activeAiConfig ? 'AI 智能学习建议' : '请先配置 AI 服务'}
             </Text>
           </Pressable>
 

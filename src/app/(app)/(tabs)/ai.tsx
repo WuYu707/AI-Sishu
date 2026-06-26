@@ -5,7 +5,6 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/lib/AppContext';
-import { isLocalAiAvailable } from '@/lib/aiService';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AI_FEATURES = [
@@ -41,8 +40,8 @@ const AI_FEATURES = [
 
 export default function AiTab() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
-  const hasAnyAi = !!(activeAiConfig || isLocalAiAvailable(localAiConfig));
+  const { isDark, activeAiConfig } = useAppContext();
+  const hasAnyAi = !!activeAiConfig;
 
   const bg = isDark ? 'bg-[#1E1E1E]' : 'bg-[#F8F9FA]';
   const card = isDark ? 'bg-[#2A2A2A] border-[#333]' : 'bg-white border-gray-100';
@@ -71,7 +70,7 @@ export default function AiTab() {
             </Text>
           </View>
           <Text className={`text-xs mt-1 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`}>
-            前往「我」→「AI服务配置」添加 API Key 或加载本地模型，才能使用 AI 功能。
+            前往「我」→「AI服务配置」添加 API Key，才能使用 AI 功能。
           </Text>
         </Pressable>
       )}

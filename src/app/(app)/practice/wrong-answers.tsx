@@ -14,7 +14,7 @@ import {
   updateTodayStat, saveAnswerRecord,
   simpleHash, type Question, type SimilarQuestion
 } from '@/lib/database';
-import { generateSimilarQuestion, isLocalAiAvailable } from '@/lib/aiService';
+import { generateSimilarQuestion } from '@/lib/aiService';
 
 // Web 环境：Blob 触发下载
 function downloadTextOnWeb(content: string, filename: string, mimeType = 'text/plain') {
@@ -38,7 +38,7 @@ interface WrongItem {
 export default function WrongAnswersScreen() {
   const router = useRouter();
   const { paperId } = useLocalSearchParams<{ paperId: string }>();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [items, setItems] = useState<WrongItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +87,7 @@ export default function WrongAnswersScreen() {
 
   async function handleGenerateSimilar(idx: number) {
     const item = items[idx];
-    const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+    const hasAi = !!activeAiConfig;
     if (!hasAi) return;
     if (item.similarQuestions.length >= 5) return;
     setGeneratingIdx(idx);
@@ -96,7 +96,6 @@ export default function WrongAnswersScreen() {
         item.question.content,
         item.question.answer || '',
         activeAiConfig,
-        localAiConfig
       );
       if (!result) return;
       const contentStr = result.content;
@@ -247,6 +246,41 @@ export default function WrongAnswersScreen() {
         </View>
       </View>
 
+      {/* 薄弱点分析 */}
+      {items.length > 0 && (
+        <View className="px-5 mb-2 mt-2">
+          <View className={`rounded-2xl border p-4 ${card}`} style={{ borderCurve: 'continuous' }}>
+            <View className="flex-row items-center gap-2 mb-3">
+              <Ionicons name="analytics-outline" size={16} color="#E67E22" />
+              <Text className={`text-sm font-semibold ${textColor}`}>薄弱点分析</Text>
+            </View>
+            <View className="flex-row gap-2 flex-wrap mb-2">
+              {(() => {
+                const typeMap: Record<string, number> = {};
+                items.forEach(item => { const t = item.question.type || '其他'; typeMap[t] = (typeMap[t] || 0) + 1; });
+                const TYPE_LABELS: Record<string, string> = {
+                  single_choice: '单选', multiple_choice: '多选', fill_in_blank: '填空',
+                  true_false: '判断', short_answer: '简答', other: '其他',
+                };
+                return Object.entries(typeMap).sort((a, b) => b[1] - a[1]).map(([type, count]) => (
+                  <View key={type} className={`rounded-lg px-2.5 py-1.5 ${isDark ? 'bg-red-950/40 border border-red-800/50' : 'bg-red-50 border border-red-100'}`}>
+                    <Text className="text-xs font-medium text-red-500">{TYPE_LABELS[type] || type}</Text>
+                    <Text className="text-xs text-red-400">{count} 题</Text>
+                  </View>
+                ));
+              })()}
+            </View>
+            <View className={`rounded-lg p-2.5 ${isDark ? 'bg-[#333]' : 'bg-gray-50'}`}>
+              <Text className={`text-xs leading-4 ${subText}`}>
+                {items.length >= 10
+                  ? `共 ${items.length} 道错题，建议重点强化「${(() => { const t: Record<string, number> = {}; items.forEach(i => { const k = i.question.type || '其他'; t[k] = (t[k] || 0) + 1; }); return Object.entries(t).sort((a, b) => b[1] - a[1])[0]?.[0] || '未知'; })()}」类题目`
+                  : `共 ${items.length} 道错题，继续加油！`}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       <FlatList
         data={items}
         keyExtractor={(_, i) => i.toString()}
@@ -256,7 +290,7 @@ export default function WrongAnswersScreen() {
         renderItem={({ item, index }) => {
           const isExpanded = expandedIdx === index;
           const isGenerating = generatingIdx === index;
-          const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+          const hasAi = !!activeAiConfig;
           const canGenerate = hasAi && item.similarQuestions.length < 5;
 
           return (

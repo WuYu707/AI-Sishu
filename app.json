@@ -2,13 +2,13 @@
   "expo": {
     "name": "AI私塾",
     "slug": "ai-private-tutor",
-    "version": "1.0.22",
+    "version": "0.1.60",
     "orientation": "portrait",
-    "icon": "https://miaoda-edit-image.cdn.bcebos.com/bmp8n1fqz9c1/IMG-bn1iwhhz5hq8.jpg",
+    "icon": "./assets/icon.png",
     "splash": {
       "backgroundColor": "#2C5F8A",
       "resizeMode": "contain",
-      "image": "https://miaoda-edit-image.cdn.bcebos.com/bmp8n1fqz9c1/IMG-bmqw7k52677k.jpg"
+      "image": "./assets/icon.png"
     },
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -18,11 +18,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "https://miaoda-edit-image.cdn.bcebos.com/bmp8n1fqz9c1/IMG-bn1iwhhz5hq8.jpg",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2C5F8A"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 3,
+      "versionCode": 5,
       "package": "com.miaoda.appbmp8n1fqz9c1",
       "usesCleartextTraffic": true,
       "permissions": [

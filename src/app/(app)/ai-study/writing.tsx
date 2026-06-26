@@ -1,5 +1,5 @@
 /**
- * 写作批改页 - 支持在线API + 本地大模型，批改结果以 Markdown 渲染
+ * 写作批改页 - 批改结果以 Markdown 渲染
  */
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,11 +8,11 @@ import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, Keyboa
 import { Ionicons } from '@expo/vector-icons';
 import Markdown from 'react-native-marked';
 import { useAppContext } from '@/lib/AppContext';
-import { correctWriting, isLocalAiAvailable } from '@/lib/aiService';
+import { correctWriting } from '@/lib/aiService';
 
 export default function WritingScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState('');
@@ -26,16 +26,16 @@ export default function WritingScreen() {
   const inputBg = isDark ? '#2A2A2A' : '#FFFFFF';
   const inputTextColor = isDark ? '#fff' : '#1a2a3a';
 
-  const hasAi = !!(activeAiConfig || isLocalAiAvailable(localAiConfig));
+  const hasAi = !!activeAiConfig;
 
   async function handleSubmit() {
     if (!inputText.trim()) { setErrorMsg('请输入写作内容'); return; }
-    if (!hasAi) { setErrorMsg('请先配置在线AI服务或启用本地大模型'); return; }
+    if (!hasAi) { setErrorMsg('请先配置在线AI服务'); return; }
     setErrorMsg('');
     setLoading(true);
     setResult('');
     try {
-      const res = await correctWriting(inputText, activeAiConfig, localAiConfig);
+      const res = await correctWriting(inputText, activeAiConfig);
       setResult(res);
     } catch (e: any) {
       setErrorMsg('批改失败：' + (e?.message || '请稍后重试'));

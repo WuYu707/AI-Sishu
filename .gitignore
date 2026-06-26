@@ -41,6 +41,9 @@ yarn-error.*
 /ios
 /android
 
+# temp build dirs
+temp_xlsx/
+
 # Claude Code
 .claude/
 output/

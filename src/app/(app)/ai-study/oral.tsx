@@ -17,7 +17,7 @@ import {
 import * as Speech from 'expo-speech';
 import { fetch } from 'expo/fetch';
 import { useAppContext } from '@/lib/AppContext';
-import { correctGrammar, callAI, isLocalAiAvailable, type AiMessage } from '@/lib/aiService';
+import { correctGrammar, callAI, type AiMessage } from '@/lib/aiService';
 import { supabase } from '@/client/supabase';
 
 const RECORDING_OPTIONS: RecordingOptions = {
@@ -50,6 +50,10 @@ const CHAT_TOPICS = [
   { key: 'travel', label: '旅行场景', prompt: '你是一位旅行场景英语对话练习助手。模拟旅行中的场景（订房、问路、购票等），用自然英语对话，并在末尾附上中文翻译。' },
   { key: 'shopping', label: '购物对话', prompt: '你是一位购物场景英语对话练习助手。模拟购物场景（询价、选购、结账等），用自然英语对话，并在末尾附上中文翻译。' },
   { key: 'interview', label: '面试英语', prompt: '你是一位专业的英语面试练习助手。模拟职场英语面试场景，给出面试官式的问题和专业反馈，并在末尾附上中文翻译。' },
+  { key: 'restaurant', label: '餐厅点餐', prompt: '你是一位餐厅服务员角色扮演助手。模拟餐厅点餐场景：问候、推荐菜品、点餐、用餐反馈、结账等。用自然英语对话，并在末尾附上中文翻译。' },
+  { key: 'doctor', label: '看医生', prompt: '你是一位医生角色扮演助手。模拟看医生场景：描述症状、医生询问、诊断建议、开药等。用自然英语对话，并在末尾附上中文翻译。' },
+  { key: 'hotel', label: '酒店入住', prompt: '你是一位酒店前台角色扮演助手。模拟酒店入住场景：预订确认、办理入住、询问设施、退房等。用自然英语对话，并在末尾附上中文翻译。' },
+  { key: 'airport', label: '机场出行', prompt: '你是一位机场工作人员角色扮演助手。模拟机场场景：值机、安检、登机、延误处理、行李查询等。用自然英语对话，并在末尾附上中文翻译。' },
 ];
 
 interface ChatMessage { role: 'user' | 'assistant'; content: string; }
@@ -65,7 +69,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export default function OralScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
   const recorder = useAudioRecorder(RECORDING_OPTIONS);
 
   // 模式切换：跟读评测 | 自由对话
@@ -176,7 +180,7 @@ export default function OralScreen() {
 
   // ── 自由对话：发送消息 ──
   async function sendChatMessage(userText: string) {
-    const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+    const hasAi = !!activeAiConfig;
     if (!hasAi) { setErrorMsg('请先配置AI服务'); return; }
     setErrorMsg('');
     const userMsg: ChatMessage = { role: 'user', content: userText };
@@ -190,7 +194,7 @@ export default function OralScreen() {
         { role: 'system', content: systemPrompt },
         ...newHistory.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       ];
-      const res = await callAI(activeAiConfig, localAiConfig, aiMessages, 600);
+      const res = await callAI(activeAiConfig, aiMessages, 600);
       if (!res.success) throw new Error(res.error || 'AI对话失败');
       const assistantMsg: ChatMessage = { role: 'assistant', content: res.text };
       setChatMessages(prev => [...prev, assistantMsg]);
@@ -217,12 +221,12 @@ export default function OralScreen() {
   async function handleEvaluate() {
     if (!targetSentence.trim()) { setErrorMsg('请选择或输入目标句子'); return; }
     if (!transcript.trim()) { setErrorMsg('请先完成录音，获取识别结果'); return; }
-    const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+    const hasAi = !!activeAiConfig;
     if (!hasAi) { setErrorMsg('请先配置AI服务'); return; }
     setErrorMsg(''); setEvalLoading(true); setFeedback('');
     try {
       const prompt = `请对比以下目标句子和用户的跟读内容，给出内容准确度评分（满分100），并提供具体改进建议和正确发音提示。\n目标句子：${targetSentence}\n用户跟读（语音识别结果）：${transcript}\n请用简洁清晰的格式输出：评分、主要差异、改进建议。`;
-      const res = await correctGrammar(prompt, activeAiConfig, localAiConfig);
+      const res = await correctGrammar(prompt, activeAiConfig);
       setFeedback(res);
     } catch (e: any) {
       setErrorMsg('AI评测失败：' + (e?.message || ''));

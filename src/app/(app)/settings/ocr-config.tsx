@@ -11,7 +11,6 @@ import { fetch } from 'expo/fetch';
 
 const OCR_TYPES = [
   { value: 'tesseract', label: 'Tesseract（本地免费）', desc: '无需 API Key，识别精度一般' },
-  { value: 'local_model', label: '本地大模型识别', desc: '使用已导入的 GGUF 模型，不可用时自动回退在线 OCR' },
   { value: 'baidu', label: '百度 OCR', desc: '高精度，需要百度 API Key' },
   { value: 'aliyun', label: '阿里云 OCR', desc: '高精度，需要阿里云 API Key' },
 ];
@@ -47,9 +46,6 @@ export default function OcrConfigScreen() {
       if (selectedType === 'tesseract') {
         // 本地引擎无需网络，直接验证可用
         setTestResult({ ok: true, msg: 'Tesseract 本地引擎可用，无需网络连接' });
-      } else if (selectedType === 'local_model') {
-        // 本地大模型：检查是否有已导入模型（从 AsyncStorage 读取）
-        setTestResult({ ok: true, msg: '本地大模型已选择。确保已在「AI服务配置」页导入 GGUF 模型，不可用时将自动回退在线 OCR。' });
       } else if (!apiKey) {
         setTestResult({ ok: false, msg: '请先填写 API Key' });
       } else if (selectedType === 'baidu') {
@@ -114,7 +110,7 @@ export default function OcrConfigScreen() {
             ))}
           </View>
 
-          {selectedType !== 'tesseract' && selectedType !== 'local_model' && (
+          {selectedType !== 'tesseract' && (
             <View className="mb-5">
               {[
                 { key: 'apiKey', label: 'API Key', val: apiKey, set: setApiKey },

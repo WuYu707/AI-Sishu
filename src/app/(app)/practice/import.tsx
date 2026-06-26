@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { fetch } from 'expo/fetch';
 import { useAppContext } from '@/lib/AppContext';
 import { createExamPaper, addQuestions } from '@/lib/database';
-import { parseQuestionsFromText, isLocalAiAvailable } from '@/lib/aiService';
+import { parseQuestionsFromText } from '@/lib/aiService';
 import { supabase } from '@/client/supabase';
 
 type QuestionType = 'single_choice' | 'multiple_choice' | 'fill_in_blank' | 'true_false' | 'short_answer';
@@ -72,7 +72,7 @@ async function callParseDocumentEdgeFunction(base64: string, type: 'pdf' | 'docx
 
 export default function PracticeImportScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [step, setStep] = useState<'upload' | 'editing' | 'saving' | 'done'>('upload');
   const [paperTitle, setPaperTitle] = useState('');
@@ -109,7 +109,7 @@ export default function PracticeImportScreen() {
       setPaperTitle(name);
       setErrorMsg('');
 
-      if (!activeAiConfig && !isLocalAiAvailable(localAiConfig)) {
+      if (!activeAiConfig) {
         setErrorMsg('未配置 AI 服务，进入手动编辑模式');
         setStep('editing');
         return;
@@ -160,7 +160,7 @@ export default function PracticeImportScreen() {
         }
 
         setProcessStage('AI解析题目...');
-        const parsed = await parseQuestionsFromText(ocrText, activeAiConfig, localAiConfig);
+        const parsed = await parseQuestionsFromText(ocrText, activeAiConfig);
         if (parsed.length > 0) {
           setQuestions(parsed.map(p => ({
             content: p.content || '',

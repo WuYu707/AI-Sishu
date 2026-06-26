@@ -27,7 +27,7 @@ interface StatsData {
 
 const SETTINGS_ITEMS = [
   { icon: 'cloud-upload-outline' as const, title: '备份与恢复', route: '/settings/backup', color: '#2C5F8A', desc: 'WebDAV / 本地备份' },
-  { icon: 'hardware-chip-outline' as const, title: 'AI服务配置', route: '/settings/ai-config', color: '#7C3AED', desc: '在线AI / 本地大模型' },
+  { icon: 'hardware-chip-outline' as const, title: 'AI服务配置', route: '/settings/ai-config', color: '#7C3AED', desc: '在线AI服务' },
   { icon: 'scan-outline' as const, title: 'OCR服务配置', route: '/settings/ocr-config', color: '#0891B2', desc: '试卷识别设置' },
   { icon: 'text-outline' as const, title: '首页文案设置', route: '/settings/motto', color: '#E67E22', desc: '励志文案 / API拉取' },
   { icon: 'moon-outline' as const, title: '外观设置', route: '/settings/appearance', color: '#374151', desc: '主题模式 / 深色/浅色' },

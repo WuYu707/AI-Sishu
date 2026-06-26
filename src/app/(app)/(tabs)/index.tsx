@@ -2,7 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 /**
  * 「学」Tab - 首页Dashboard
  */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -152,6 +152,13 @@ export default function HomeScreen() {
   const [editWordGoal, setEditWordGoal] = useState('20');
   const [editQuestionGoal, setEditQuestionGoal] = useState('10');
 
+  // 番茄钟
+  const [pomodoroActive, setPomodoroActive] = useState(false);
+  const [pomodoroSeconds, setPomodoroSeconds] = useState(0);
+  const [pomodoroTarget] = useState(25 * 60); // 25分钟
+  const pomodoroRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [pomodoroCompleted, setPomodoroCompleted] = useState(0);
+
   const bg = isDark ? 'bg-[#1E1E1E]' : 'bg-[#F8F9FA]';
   const card = isDark ? 'bg-[#2A2A2A] border-[#333]' : 'bg-white border-gray-100';
   const textColor = isDark ? 'text-white' : 'text-[#1a2a3a]';
@@ -182,6 +189,32 @@ export default function HomeScreen() {
   );
 
   const currentMotto = mottos[mottoIndex % Math.max(mottos.length, 1)];
+
+  // 番茄钟逻辑
+  function togglePomodoro() {
+    if (pomodoroActive) {
+      if (pomodoroRef.current) clearInterval(pomodoroRef.current);
+      setPomodoroActive(false);
+    } else {
+      setPomodoroSeconds(0);
+      setPomodoroActive(true);
+      pomodoroRef.current = setInterval(() => {
+        setPomodoroSeconds(prev => {
+          if (prev + 1 >= 25 * 60) {
+            if (pomodoroRef.current) clearInterval(pomodoroRef.current);
+            setPomodoroActive(false);
+            setPomodoroCompleted(c => c + 1);
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    }
+  }
+
+  useEffect(() => {
+    return () => { if (pomodoroRef.current) clearInterval(pomodoroRef.current); };
+  }, []);
 
   if (loading) {
     return (
@@ -222,6 +255,40 @@ export default function HomeScreen() {
         <View className="flex-row gap-3 mt-3">
           <StatCard label="正确率" value={`${Math.round((stats?.accuracy || 0) * 100)}`} unit="%" icon="checkmark-circle-outline" color="#2E6B5C" isDark={isDark} />
           <StatCard label="试题数" value={`${stats?.question_count || 0}`} unit="题" icon="help-circle-outline" color="#9333EA" isDark={isDark} />
+        </View>
+      </View>
+
+      {/* 番茄钟 */}
+      <View className="px-5 mb-4">
+        <View className={`rounded-2xl border p-4 ${card}`} style={{ borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 1, blurRadius: 4, color: 'rgba(0,0,0,0.06)' }] }}>
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center gap-2">
+              <Text style={{ fontSize: 18 }}>🍅</Text>
+              <Text className={`text-sm font-semibold ${textColor}`}>专注番茄钟</Text>
+            </View>
+            {pomodoroCompleted > 0 && (
+              <Text className={`text-xs ${subText}`}>今日已完成 {pomodoroCompleted} 个</Text>
+            )}
+          </View>
+          <View className="flex-row items-center gap-4">
+            <View className="flex-1">
+              <View className={`h-2 rounded-full overflow-hidden ${isDark ? 'bg-[#333]' : 'bg-gray-100'}`}>
+                <View className="h-2 rounded-full bg-[#E67E22]" style={{ width: `${(pomodoroSeconds / pomodoroTarget) * 100}%` }} />
+              </View>
+              <Text className={`text-xs mt-1.5 ${subText}`}>
+                {Math.floor(pomodoroSeconds / 60)}:{String(pomodoroSeconds % 60).padStart(2, '0')} / 25:00
+              </Text>
+            </View>
+            <Pressable onPress={togglePomodoro}
+              className={`px-4 py-2.5 rounded-xl items-center ${pomodoroActive ? (isDark ? 'bg-red-900' : 'bg-red-50') : 'bg-[#E67E22]'}`}>
+              <Text className={`text-xs font-semibold ${pomodoroActive ? 'text-red-500' : 'text-white'}`}>
+                {pomodoroActive ? '暂停' : '开始专注'}
+              </Text>
+            </Pressable>
+          </View>
+          {pomodoroActive && (
+            <Text className={`text-[10px] mt-2 ${subText}`}>专注学习中...完成25分钟后休息一下</Text>
+          )}
         </View>
       </View>
 
@@ -278,6 +345,53 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
+
+      {/* 今日小结 */}
+      {(stats?.study_minutes || 0) > 0 && (
+        <View className="px-5 mb-4">
+          <Text className={`text-base font-semibold mb-3 ${textColor}`}>今日小结</Text>
+          <View className={`rounded-2xl border p-4 ${card}`} style={{ borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 1, blurRadius: 4, color: 'rgba(0,0,0,0.06)' }] }}>
+            <View className="flex-row items-center gap-2 mb-3">
+              <Ionicons name="sparkles-outline" size={16} color="#E67E22" />
+              <Text className={`text-sm font-semibold ${textColor}`}>学习效能</Text>
+            </View>
+            <View className="flex-row gap-4 mb-3">
+              <View className="flex-1">
+                <Text className={`text-xs ${subText}`}>记忆效率</Text>
+                <Text className={`text-lg font-bold ${textColor}`}>
+                  {stats.study_minutes > 0 ? (stats.new_words / stats.study_minutes).toFixed(1) : '0'}
+                </Text>
+                <Text className={`text-[10px] ${subText}`}>新词/分钟</Text>
+              </View>
+              <View className={`w-px ${isDark ? 'bg-[#444]' : 'bg-gray-100'}`} />
+              <View className="flex-1">
+                <Text className={`text-xs ${subText}`}>答题正确率</Text>
+                <Text className={`text-lg font-bold ${textColor}`}>
+                  {Math.round((stats.accuracy || 0) * 100)}%
+                </Text>
+                <Text className={`text-[10px] ${subText}`}>{stats.question_count || 0} 道题</Text>
+              </View>
+              <View className={`w-px ${isDark ? 'bg-[#444]' : 'bg-gray-100'}`} />
+              <View className="flex-1">
+                <Text className={`text-xs ${subText}`}>复习进度</Text>
+                <Text className={`text-lg font-bold ${textColor}`}>{reviewCount}</Text>
+                <Text className={`text-[10px] ${subText}`}>待复习</Text>
+              </View>
+            </View>
+            <View className={`rounded-xl p-2.5 ${isDark ? 'bg-blue-950/30' : 'bg-blue-50'}`}>
+              <Text className={`text-xs leading-4 ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
+                {stats.new_words >= todayPlan.wordGoal && (stats.question_count || 0) >= todayPlan.questionGoal
+                  ? '太棒了！今日目标全部达成，继续保持！'
+                  : stats.new_words >= todayPlan.wordGoal
+                  ? `单词目标已达成！再做 ${(todayPlan.questionGoal - (stats.question_count || 0))} 道题就完成今日计划了`
+                  : (stats.question_count || 0) >= todayPlan.questionGoal
+                  ? `试题目标已达成！再学 ${(todayPlan.wordGoal - (stats.new_words || 0))} 个单词就完成今日计划了`
+                  : `今日进度：已学 ${stats.new_words || 0} 词，做 ${(stats.question_count || 0)} 题，加油！`}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* 艾宾浩斯复习提醒 */}
       {reviewCount > 0 && (

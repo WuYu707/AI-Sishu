@@ -214,6 +214,9 @@ const dbReady = process.env.EXPO_OS === 'web'
   }
 
   return db;
+}).catch((err) => {
+  console.error('[DB] 初始化失败:', err);
+  return _mockDb as unknown as SQLite.SQLiteDatabase;
 }); // Native SQLite 初始化结束
 
 export async function getDb() {

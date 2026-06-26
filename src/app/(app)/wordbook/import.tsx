@@ -10,124 +10,25 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/lib/AppContext';
 import { createWordbook, addWord, addLog } from '@/lib/database';
-import { generateWordInfo, callAI, isLocalAiAvailable } from '@/lib/aiService';
+import { generateWordInfo, callAI } from '@/lib/aiService';
 import { fetch } from 'expo/fetch';
+import wordbankData from '@/lib/wordbank.json';
 
 type Step = 'input' | 'preview' | 'generating' | 'done';
 // AI生成子步骤
 type AiGenStep = 'form' | 'previewing' | 'importing';
 
-/** 内置词汇包 */
-const BUILTIN_PACKS = [
-  {
-    id: 'cet4', name: '四级核心词', lang: 'en', icon: '📚',
-    desc: 'CET-4 高频核心词汇 200+',
-    words: [
-      'ability','abroad','absent','accept','accident','achieve','action','activity','admire','admit',
-      'affect','afford','afraid','against','agree','agriculture','allow','amount','analyze','anxious',
-      'apply','appreciate','argue','arrange','assist','attempt','attitude','attract','authority','available',
-      'balance','basic','beauty','benefit','billion','boundary','breathe','brilliant','capital','challenge',
-      'character','charge','choice','citizen','claim','collect','combine','comment','commit','compare',
-      'compete','complete','concern','conduct','confident','connect','consider','contain','continue','control',
-      'convenient','correct','creative','culture','curious','damage','decide','declare','define','deliver',
-      'depend','describe','design','develop','differ','difficult','discover','discuss','distance','divide',
-      'doubt','economy','education','effect','effort','encourage','energy','enjoy','environment','equal',
-      'escape','evaluate','examine','example','expect','experience','explain','express','fail','feature',
-      'figure','finance','flexible','focus','forgive','freedom','function','generous','global','gradual',
-      'growth','happen','health','honest','humour','ideal','ignore','imagine','improve','include',
-      'increase','independent','influence','inform','interest','involve','issue','knowledge','language','leader',
-      'limit','manage','mention','method','modern','monitor','motivation','natural','necessary','notice',
-      'observe','obtain','opinion','organize','overcome','perfect','perform','permit','policy','popular',
-      'position','possible','practice','present','prevent','produce','protect','provide','purchase','quality',
-      'realize','reason','receive','recognize','reduce','reflect','refuse','related','report','research',
-      'respect','respond','result','review','revise','reward','satisfy','schedule','select','serious',
-      'shortage','similar','situation','solution','strategy','subject','success','suggest','support','survey',
-      'system','tradition','transfer','understand','useful','value','various','volunteer','welfare','widespread',
-    ],
-  },
-  {
-    id: 'cet6', name: '六级核心词', lang: 'en', icon: '🎓',
-    desc: 'CET-6 高频核心词汇 200+',
-    words: [
-      'abbreviate','abolish','abstract','accelerate','accommodate','accomplish','accumulate','accurate',
-      'acknowledge','acquire','adequate','adjacent','administer','adolescent','advocate','aesthetic','affiliate',
-      'affirm','aggravate','aggregate','allegiance','allocate','alleviate','alternate','ambiguous','ambitious',
-      'amend','amplify','anticipate','apparatus','arbitrary','articulate','assess','assign','assumption',
-      'attribute','auditor','authentic','authorize','autonomous',
-      'benevolent','bereave','breakthrough','bureaucracy','capitalist','catastrophe','chronological',
-      'circumstance','cognitive','coherent','coincide','commence','commodity','compatible','compensate',
-      'competent','complement','complicate','comprehensive','conceive','conclusive','conform','confront',
-      'consecutive','consent','conservative','constitute','contaminate','contemplate','contradict','controversy',
-      'conventional','coordinate','correlate','counterpart','credibility','crucial','cultivate','dedicate',
-      'deficiency','deliberate','demonstration','deprive','derive','deteriorate','devastating','diagnose',
-      'diplomatic','discriminate','disrupt','dominant','elaborate','eliminate','eloquent','emphasize',
-      'encounter','enterprise','equivalent','evaluate','eventually','eventually','exaggerate','exclusively',
-      'exhaust','explicit','exploit','facilitate','feasible','fluctuate','formulate','fundamental','generate',
-      'hypothesis','illuminate','implement','implication','inconsistent','inevitable','infrastructure',
-      'initiate','innovation','insist','integration','intellectual','intensive','intermediate','intervene',
-      'legitimate','manifest','manipulate','mechanism','minimal','mobilize','moderate','monetary','negotiate',
-      'notorious','objective','obligation','phenomenon','pragmatic','predominant','preliminary','privilege',
-      'productive','profound','promote','proportion','provisional','psychology','reconcile','regulate',
-      'reinforce','relevant','reluctant','remedy','restrict','rigorous','sophisticated','subsequent',
-      'substantial','sufficient','supplement','sustainable','synthesize','tendency','terminology','thorough',
-      'transform','transmission','transparent','undertake','unique','utilize','virtually','vulnerable',
-      'widespread','withdraw','testimony','controversy','accommodate','perpetual','predominant',
-    ],
-  },
-  {
-    id: 'toefl', name: 'TOEFL 词汇', lang: 'en', icon: '🌍',
-    desc: 'TOEFL 高频核心词汇 200+',
-    words: [
-      'abandon','abrupt','abstract','abundant','accelerate','accommodate','accomplish','accurate',
-      'acknowledge','acquire','acute','adapt','adequate','adjacent','adversely','aesthetic','aggregate',
-      'allocate','ambiguous','amplify','analogy','anatomy','anthropology','anticipate','apparatus',
-      'archeology','articulate','assert','assess','assimilate','authority','autonomy','captivate',
-      'circumvent','collaborate','compensate','comprehensive','conceive','conscious','controversial',
-      'converge','correlate','correspond','criteria','cultivate','deduce','derive','deteriorate',
-      'devastating','differentiate','disperse','diverse','dominant','elaborate','emerge','empirical',
-      'emphasize','encounter','equivalent','erode','evolve','excavate','exhibit','explicit','exploit',
-      'extinction','facilitate','fluctuate','fossil','fragment','function','generate','geographic',
-      'habitat','hypothesis','illustrate','implement','infer','inhabit','innovation','integration',
-      'intensify','intrinsic','investigate','isolate','landscape','latitude','legitimate','manifest',
-      'mechanism','migrate','mineral','modify','monitor','navigate','notable','nutrient','observe',
-      'obtain','organism','origin','perceive','phenomenon','plantation','plausible','predator',
-      'predominant','prehistoric','preserve','prevalent','primarily','primates','probability','process',
-      'prohibit','proportion','propose','protein','radiation','random','reconstruct','recycle','regulate',
-      'reinforce','relevant','remarkable','reproduce','respond','restrict','retain','significant','simulate',
-      'sophisticated','speculate','stable','subsequent','substance','supplement','survive','sustain',
-      'taxonomy','temperate','tendency','theoretical','threshold','transform','transmit','transparent',
-      'unique','utilize','versatile','vibrate','widespread','yield','archaeology','biodiversity',
-      'concentration','continental','dormant','excavation','fermentation','geographic','hemisphere',
-      'indigenous','latitude','longitude','metabolism','migration','nutrient','paleontology','specimen',
-    ],
-  },
-  {
-    id: 'ielts', name: 'IELTS 词汇', lang: 'en', icon: '✈️',
-    desc: 'IELTS 高频核心词汇 200+',
-    words: [
-      'achieve','affect','approach','appropriate','area','assess','assume','authority','available',
-      'benefit','complex','component','concept','consequence','consistent','constitute','context',
-      'contract','contribute','create','data','define','distribute','economic','environment','establish',
-      'evaluate','evident','export','factor','finance','formula','function','identify','income',
-      'indicate','individual','interpret','involve','issue',
-      'abandon','access','accommodate','accurate','acknowledge','acquire','adapt','adequate','advocate',
-      'allocate','ambiguous','analyse','anticipate','apparent','apply','approximate','aspect','assign',
-      'attain','aware','capacity','category','challenge','channel','clarify','classify','collaborate',
-      'community','comprehend','concentrate','confirm','confront','considerable','contrast','conventional',
-      'coordinate','culture','decline','demonstrate','derive','design','determine','develop','diverse',
-      'document','dominant','duration','eliminate','emphasis','enable','encounter','enhance','ensure',
-      'establish','examine','expand','exposure','extract','focus','generate','global','guideline',
-      'highlight','hypothesis','implementation','implication','incentive','influence','inform','integrate',
-      'intervene','investigate','justify','landscape','legislation','maintain','marginal','minimize',
-      'monitor','motivate','negative','neutral','notion','obtain','outline','overcome','participate',
-      'perform','perspective','positive','potential','primary','principle','process','promote','proportion',
-      'provide','publish','pursue','ratio','realise','recover','reinforce','relevant','reliable','require',
-      'research','resource','respond','restrict','reveal','revise','role','sector','significant','similar',
-      'solution','strategy','structure','style','summarise','support','sustainable','target','theme',
-      'tradition','transform','trend','unique','vary','volume','widespread','welfare','yield','zone',
-    ],
-  },
-] as const;
+/** 内置词汇包 - 按分类分组 */
+const WORD_CATEGORIES = [
+  { key: '1.小学', label: '小学', icon: '📖', color: '#4CAF50' },
+  { key: '2.初中', label: '初中', icon: '📚', color: '#2196F3' },
+  { key: '3.高中', label: '高中', icon: '🎓', color: '#9C27B0' },
+  { key: '3.高考', label: '高考', icon: '📝', color: '#FF5722' },
+  { key: '4.大学四六级', label: '大学四六级', icon: '🏫', color: '#E91E63' },
+  { key: '5.考研', label: '考研', icon: '🎯', color: '#F44336' },
+  { key: '6.托福雅思', label: '托福雅思', icon: '🌍', color: '#00BCD4' },
+  { key: '8.新概念英语', label: '新概念英语', icon: '📗', color: '#8BC34A' },
+];
 
 interface ParsedWord {
   word: string;
@@ -152,7 +53,7 @@ function detectLanguage(words: string[]): string {
 
 export default function WordbookImportScreen() {
   const router = useRouter();
-  const { isDark, activeAiConfig, localAiConfig } = useAppContext();
+  const { isDark, activeAiConfig } = useAppContext();
 
   const [step, setStep] = useState<Step>('input');
   const [pasteText, setPasteText] = useState('');
@@ -162,6 +63,8 @@ export default function WordbookImportScreen() {
   const [errorMsg, setErrorMsg] = useState('');
   const [progress, setProgress] = useState(0);
   const [showNameModal, setShowNameModal] = useState(false);
+  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // ── AI 生成词汇包状态 ──
   const [showAiGenModal, setShowAiGenModal] = useState(false);
@@ -225,12 +128,12 @@ export default function WordbookImportScreen() {
     try {
       const wordList = parsedWords.map(w => w.word);
       let enriched: ParsedWord[] = [...parsedWords];
-      const hasAi = activeAiConfig || isLocalAiAvailable(localAiConfig);
+      const hasAi = !!activeAiConfig;
       if (hasAi) {
         const batchSize = 10;
         for (let i = 0; i < wordList.length; i += batchSize) {
           const batch = wordList.slice(i, i + batchSize);
-          const results = await generateWordInfo(batch, activeAiConfig, 'Chinese', localAiConfig);
+          const results = await generateWordInfo(batch, activeAiConfig, 'Chinese');
           results.forEach(r => {
             const idx = enriched.findIndex(w => w.word === r.word);
             if (idx >= 0) {
@@ -259,8 +162,8 @@ export default function WordbookImportScreen() {
     const count = parseInt(aiGenCount, 10);
     if (!topic) { setAiGenError('请输入词汇包主题'); return; }
     if (!count || count <= 0) { setAiGenError('请输入有效数量（大于0）'); return; }
-    if (!activeAiConfig && !isLocalAiAvailable(localAiConfig)) {
-      setAiGenError('请先配置AI服务（设置→在线AI配置 或 本地大模型）'); return;
+    if (!activeAiConfig) {
+      setAiGenError('请先配置AI服务（设置→AI服务配置）'); return;
     }
     setAiGenError(''); setAiGenLoading(true);
     try {
@@ -274,7 +177,7 @@ export default function WordbookImportScreen() {
 hotel|酒店
 reservation|预订
 luggage|行李`;
-      const res = await callAI(activeAiConfig, localAiConfig, [{ role: 'user', content: prompt }], 1500);
+      const res = await callAI(activeAiConfig, [{ role: 'user', content: prompt }], 1500);
       if (!res.success) throw new Error(res.error || 'AI生成失败');
       // 解析 AI 返回内容
       const lines = res.text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -362,21 +265,55 @@ luggage|行李`;
               <Text className={`text-lg font-bold mb-1 ${textColor}`}>导入词汇</Text>
               <Text className={`text-sm mb-4 ${subText}`}>内置词汇包一键导入，AI智能生成，或上传 TXT/CSV 文件</Text>
 
-              {/* 内置词汇包 */}
+              {/* 内置词汇包 - 按分类折叠 */}
               <Text className={`text-sm font-semibold mb-2 ${textColor}`}>内置词汇包</Text>
-              <View className="flex-row flex-wrap gap-2 mb-4">
-                {BUILTIN_PACKS.map(pack => (
-                  <Pressable
-                    key={pack.id}
-                    onPress={() => { setPasteText(pack.words.join('\n')); setWordbookName(pack.name); }}
-                    className={`rounded-xl border px-3 py-2.5 ${isDark ? 'bg-[#2A2A2A] border-[#444]' : 'bg-white border-gray-200'}`}
-                    style={{ borderCurve: 'continuous', minWidth: '46%', flex: 1 }}
-                  >
-                    <Text className="text-base mb-0.5">{pack.icon}</Text>
-                    <Text className={`text-xs font-semibold ${textColor}`}>{pack.name}</Text>
-                    <Text className={`text-xs ${subText}`}>{pack.desc}</Text>
-                  </Pressable>
-                ))}
+              <View className="mb-4">
+                {WORD_CATEGORIES.map(cat => {
+                  const packs = (wordbankData as any[]).filter((p: any) => p.c.startsWith(cat.key));
+                  if (packs.length === 0) return null;
+                  const isExpanded = expandedCategory === cat.key;
+                  const totalWords = packs.reduce((sum: number, p: any) => sum + p.w.length, 0);
+                  return (
+                    <View key={cat.key} className={`rounded-xl border mb-2 ${isDark ? 'border-[#333]' : 'border-gray-200'}`}>
+                      <Pressable
+                        onPress={() => setExpandedCategory(isExpanded ? null : cat.key)}
+                        className="flex-row items-center justify-between px-3 py-3"
+                      >
+                        <View className="flex-row items-center gap-2">
+                          <Text style={{ fontSize: 18 }}>{cat.icon}</Text>
+                          <Text className={`text-sm font-semibold ${textColor}`}>{cat.label}</Text>
+                          <Text className={`text-xs px-1.5 py-0.5 rounded-full ${isDark ? 'bg-[#333] text-gray-400' : 'bg-gray-100 text-gray-500'}`}>{packs.length}本 · {totalWords}词</Text>
+                        </View>
+                        <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={isDark ? '#888' : '#666'} />
+                      </Pressable>
+                      {isExpanded && (
+                        <View className="px-3 pb-3">
+                          {packs.map((pack: any) => {
+                            const packId = `wb_${pack.n}`;
+                            const isSelected = selectedPackId === packId;
+                            return (
+                              <Pressable
+                                key={packId}
+                                onPress={() => {
+                                  setSelectedPackId(isSelected ? null : packId);
+                                  setPasteText(isSelected ? '' : pack.w.join('\n'));
+                                  setWordbookName(isSelected ? '' : pack.n);
+                                }}
+                                className={`rounded-lg px-3 py-2.5 mb-1.5 flex-row items-center justify-between ${isSelected ? (isDark ? 'bg-[#1a2d40] border border-[#2C5F8A]' : 'bg-blue-50 border border-[#2C5F8A]') : (isDark ? 'bg-[#2A2A2A]' : 'bg-gray-50')}`}
+                              >
+                                <View className="flex-1">
+                                  <Text className={`text-xs font-semibold ${isSelected ? 'text-[#2C5F8A]' : textColor}`}>{pack.n}</Text>
+                                  <Text className={`text-[10px] ${isSelected ? (isDark ? 'text-blue-300' : 'text-blue-600') : subText}`}>{pack.w.length}词</Text>
+                                </View>
+                                {isSelected && <Ionicons name="checkmark-circle" size={16} color="#2C5F8A" />}
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
 
               {/* AI 生成词汇包入口 */}
@@ -429,7 +366,7 @@ luggage|行李`;
           {step === 'preview' && (
             <>
               <Text className={`text-lg font-bold mb-1 ${textColor}`}>确认单词列表</Text>
-              <Text className={`text-sm mb-2 ${subText}`}>共识别到 {parsedWords.length} 个单词{(activeAiConfig || isLocalAiAvailable(localAiConfig)) ? '，将使用 AI 自动生成释义' : '（未配置 AI，仅保存单词）'}</Text>
+              <Text className={`text-sm mb-2 ${subText}`}>共识别到 {parsedWords.length} 个单词{activeAiConfig ? '，将使用 AI 自动生成释义' : '（未配置 AI，仅保存单词）'}</Text>
               <View className={`flex-row items-center gap-1.5 mb-4 px-3 py-2 rounded-xl ${isDark ? 'bg-[#2A2A2A]' : 'bg-blue-50'}`}>
                 <Ionicons name="language-outline" size={14} color="#2C5F8A" />
                 <Text className="text-xs" style={{ color: '#2C5F8A' }}>

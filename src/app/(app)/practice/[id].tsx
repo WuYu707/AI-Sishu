@@ -64,6 +64,8 @@ export default function PracticeScreen() {
   const card = isDark ? 'bg-[#2A2A2A] border-[#333]' : 'bg-white border-gray-100';
   const textColor = isDark ? 'text-white' : 'text-[#1a2a3a]';
   const subText = isDark ? 'text-gray-400' : 'text-gray-500';
+  const inputBg = isDark ? '#333' : '#F3F4F6';
+  const inputTextColor = isDark ? '#fff' : '#1a2a3a';
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -169,6 +171,8 @@ export default function PracticeScreen() {
   const isMultiple = current?.type === 'multiple_choice';
   const isTrueFalse = current?.type === 'true_false';
   const isChoice = current?.type === 'single_choice' || isMultiple || isTrueFalse;
+  const isFillBlank = current?.type === 'fill_in_blank';
+  const isShortAnswer = current?.type === 'short_answer';
 
   function toggleOption(opt: string) {
     if (submitted) return;
@@ -181,8 +185,8 @@ export default function PracticeScreen() {
 
   async function handleSubmit() {
     if (!current) return;
-    const selected = selectedOptions.join('');
-    const correct = current.answer?.trim() === selected.trim();
+    const selected = isMultiple ? selectedOptions.sort().join('') : selectedOptions.join('');
+    const correct = current.answer?.trim().toLowerCase() === selected.trim().toLowerCase();
     setSubmitted(true);
     const newResults = [...results, { id: current.id, correct }];
     setResults(newResults);
@@ -319,8 +323,36 @@ export default function PracticeScreen() {
         {practiceMode === 'dungeon' && (
           <View className={`h-1 rounded-full mt-1 ${isDark ? 'bg-[#444]' : 'bg-orange-100'}`}>
             <View className="h-1 rounded-full bg-[#E67E22]" style={{ width: `${(dungeonLevelProgress / DUNGEON_PER_LEVEL) * 100}%` }} />
-          </View>
-        )}
+            </View>
+          )}
+
+          {/* 填空/简答输入 */}
+          {(isFillBlank || isShortAnswer) && (
+            <View className="mb-4">
+              <Text className={`text-xs font-medium mb-2 ${subText}`}>
+                {isFillBlank ? '请填写正确答案' : '请简要作答'}
+              </Text>
+              <TextInput
+                value={selectedOptions[0] || ''}
+                onChangeText={v => setSelectedOptions([v])}
+                placeholder={isFillBlank ? '输入答案...' : '输入回答...'}
+                placeholderTextColor={isDark ? '#555' : '#aaa'}
+                multiline={isShortAnswer}
+                numberOfLines={isShortAnswer ? 4 : 1}
+                editable={!submitted}
+                style={{
+                  backgroundColor: inputBg,
+                  color: inputTextColor,
+                  borderRadius: 12,
+                  padding: 12,
+                  fontSize: 15,
+                  textAlignVertical: isShortAnswer ? 'top' : 'center',
+                  borderWidth: 1,
+                  borderColor: submitted ? (results[results.length - 1]?.correct ? '#22C55E' : '#EF4444') : (isDark ? '#444' : '#E5E7EB'),
+                }}
+              />
+            </View>
+          )}
       </View>
 
       <ScrollView contentInsetAdjustmentBehavior="automatic" className="flex-1" keyboardShouldPersistTaps="handled">
