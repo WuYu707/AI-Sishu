@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "buildNumber": "1",
-      "bundleIdentifier": "com.wuyu.aisishu"
+      "bundleIdentifier": "io.github.wuyu707.aisishu"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +23,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "versionCode": 7,
-      "package": "com.wuyu.aisishu",
+      "package": "io.github.wuyu707.aisishu",
       "usesCleartextTraffic": true,
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
